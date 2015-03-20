@@ -3,31 +3,39 @@
 
 #include <stdio.h>
 #include <stdint.h>
+
 /*
  * spawn new processes, connect to their input/output/error pipes,
  * and obtain their return codes.
  */
 
+
 /* the context info used by function 'prog_exec' */
 struct prog_context;
+/* create a context */
 struct prog_context *progcnx_new();
+/* free the context */
 void  progcnx_free(struct prog_context *cnt);
 
-/* return FILE pointer which can write the data to stdin of he child process */
+/* return FILE pointer which can write the data to stdin of he child process 
+ * 
+ * NOTE: should call `fclose' after using.
+ */
 FILE *progcnx_get_stdin(struct prog_context *cnt);
 
 /* return FILE pointer which can read the data which the child process 
  * output in stdout
+ * 
+ * NOTE: should call `fclose' after using.
  */
-
 FILE *progcnx_get_stdout(struct prog_context *cnt);
 
 /* return FILE pointer which can read the data which the child process 
  * output in stderr
+ * NOTE: should call `fclose' after using.
  */
 FILE *progcnx_get_stderr(struct prog_context *cnt);
 
-struct dynamic_buffer;
 
 #define CHILD_IO_STDIN_CLOSE                  0x1<<0;
 #define CHILD_IO_STDOUT_CLOSE                 0x1<<1;
@@ -50,6 +58,7 @@ int prog_wait(struct prog_context *context);
  */
 int prog_poll(struct prog_context *context);
 
+struct dynamic_buffer;
 /* Interact with process: Send data to stdin. Read data from stdout
  * and stderr, until end-of-file is reached. Wait for process to terminate. 
  */

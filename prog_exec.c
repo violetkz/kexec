@@ -321,22 +321,26 @@ int prog_communicate(struct prog_context *context,
 
 /** terminal the child process */
 int prog_terminal(struct prog_context* cnx) {
+    int rc = -1;
     if (cnx) {
         int rc = kill(cnx->child_pid, SIGINT);
         if (rc != 0) {
             dlog("kill SIGINT failed, errno:[%d]\n", errno);
         }
     }
+    return rc;
 }
 
 /** kill the chile process */
 int prog_kill(struct prog_context* cnx) {
+    int rc = -1;
     if (cnx) {
-        int rc = kill(cnx->child_pid, SIGKILL);
+        rc = kill(cnx->child_pid, SIGKILL);
         if (rc != 0) {
             dlog("kill SIGKILL failed, errno:[%d]\n", errno);
         }
     }
+    return rc;
 }
 
 #undef SHELL
