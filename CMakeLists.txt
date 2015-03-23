@@ -1,5 +1,7 @@
 project(kexec)
 
+cmake_minimum_required(VERSION 2.8)
+
 set(SRC 
     dynamic_buffer.c 
     prog_exec.c
@@ -8,6 +10,7 @@ set(SRC
     trace.c
     )
 
+add_definitions("-D __debug__")
 add_library(kexec STATIC ${SRC})
 
 add_subdirectory(test)

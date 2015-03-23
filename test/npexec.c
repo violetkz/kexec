@@ -41,7 +41,7 @@ int do_test2(const char* cmd) {
 int do_interact(const char *cmd) {
    struct prog_context *cnt = prog_exec(cmd, 0); 
    int i = 0;
-   while (prog_poll(cnt) == -1) {
+   do {
        struct dynamic_buffer *obuf = dynbuffer_new();
        struct dynamic_buffer *ebuf = dynbuffer_new();
 
@@ -50,10 +50,12 @@ int do_interact(const char *cmd) {
        printf("** in: %s", buff);
        prog_communicate(cnt, buff, obuf, ebuf);
        printf("** xout: %s\n", dynbuffer_data(obuf));
+       printf("** xerr: %s\n", dynbuffer_data(ebuf));
 
        dynbuffer_free(obuf);
        dynbuffer_free(ebuf);
    }
+   while(prog_poll(cnt) == -1);
    return 0;
 }
 

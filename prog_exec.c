@@ -26,6 +26,7 @@ struct prog_context {
     int     fd_in;
     int     fd_out;
     int     fd_err;
+    int     fd_blackhold;
 
     unsigned char  child_io_stdin_pipe:2; 
     unsigned char  child_io_stdout_pipe:2; 
@@ -37,8 +38,8 @@ struct prog_context *progcnx_new() {
     struct prog_context *n = 
         (struct prog_context *) malloc (sizeof(struct prog_context));
     if (n) {
-        memset(n, 0x00, sizeof(struct prog_context));
-        n->fd_in = n->fd_out = n->fd_err  = -1;
+        //memset(n, 0x00, sizeof(struct prog_context));
+        n->fd_in = n->fd_out = n->fd_err  = n->fd_blackhold -1;
         n->child_io_stdin_pipe = 1;
         n->child_io_stdout_pipe = 1;
         n->child_io_stderr_pipe = 1;
@@ -50,6 +51,7 @@ struct prog_context *progcnx_new() {
 
 void progcnx_free(struct prog_context *cnt) {
     if (cnt) {
+        if (cnt->fd_blackhold != -1) close(cnt->fd_blackhold);
         free(cnt);
     }
 }
@@ -62,6 +64,18 @@ FILE *progcnx_get_stdout(struct prog_context *cnt) {
 }
 FILE *progcnx_get_stderr(struct prog_context *cnt) {
     return (cnt && cnt->fd_err != -1) ? fdopen(cnt->fd_err, "r") : NULL;
+}
+
+
+int make_blackhole(struct prog_context* cnt, int flg) {
+
+    if ((flg & CHILD_IO_STDOUT_CLOSE) || (flg & CHILD_IO_STDERR_CLOSE)) {
+        cnt->fd_blackhold =  open("/dev/null", O_RDWR); 
+        if (cnt->fd_blackhold == -1) {
+            perror("open blackhole failed");
+        }
+    }
+    return cnt->fd_blackhold;
 }
 
 struct prog_context * prog_exec(const char* cmd, int flg) {
@@ -99,21 +113,29 @@ struct prog_context * prog_exec(const char* cmd, int flg) {
         return cnt;
     }
 
+    int blackhole_fd = make_blackhole(cnt, flg);
+
     pid = fork ();
     if (pid < 0) {
         /* The fork failed.  Report failure.  */
         status = cnt->state = -1;
     }
     else if (pid == 0) {
-        /* This is the child process.  Execute the shell command. */
+        /* This is the child process.  Execute the supprocess. */
         if (cnt->child_io_stdin_pipe)  {
             close(stdin_pipe[PIPE_WRITE_PORT]);
             dup2(stdin_pipe[PIPE_READ_PORT],STDIN_FILENO);
         }
-
+        
+        
+        /** handle child process stdout */
         if (cnt->child_io_stdout_pipe)    {
             close(stdout_pipe[PIPE_READ_PORT]);
             dup2(stdout_pipe[PIPE_WRITE_PORT],STDOUT_FILENO);
+        }
+        else {
+            /* all output of stdout write into blackhold */
+            dup2(blackhole_fd, STDOUT_FILENO);
         }
 
         if (flg & CHILD_IO_STDERR_REDIRECT_TO_STDOUT) {
@@ -122,6 +144,9 @@ struct prog_context * prog_exec(const char* cmd, int flg) {
         else if (cnt->child_io_stderr_pipe) {
             close(stderr_pipe[PIPE_READ_PORT]);
             dup2(stderr_pipe[PIPE_WRITE_PORT],STDERR_FILENO);
+        }
+        else {
+            dup2(blackhole_fd, STDERR_FILENO);
         }
 
         if (cnt->child_exec_with_shell) {
@@ -283,28 +308,28 @@ int prog_communicate(struct prog_context *context,
             if (dynbuffer_acquire(out_buf, 512)) {
                 int len = read(fd_out, dynbuffer_writable_pos(out_buf), 512); 
                 if (len > 0 ) {
-                    dlog("read bytes [%d] from fd_out\n", len);
+                    dlog("read bytes [%d] from fd_out", len);
                     dynbuffer_consume(out_buf, len);
                 }
                 else {
-                    dlog("read eof for fd_out.\n");
+                    dlog("read eof for fd_out.");
                     need_watch_out = 0;
-                    break;
+                    //break;
                 }
             }
-        }	
+        }
 
         if (need_watch_err && FD_ISSET(fd_err, &read_fd_set))  {
             if (dynbuffer_acquire(err_buf, 128)) {
                 int len = read(fd_err, dynbuffer_writable_pos(err_buf), 128); 
                 if (len > 0) {
-                    dlog("read bytes [%d] from fd_err\n", len);
+                    dlog("read bytes [%d] from fd_err.", len);
                     dynbuffer_consume(err_buf, len);
                 }
                 else {
-                    dlog("read eof for fd_err.\n");
+                    dlog("read eof for fd_err.");
                     need_watch_err = 0;
-                    break;
+                    //break;
                 }
             }
         }

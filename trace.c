@@ -26,7 +26,7 @@ void dlog(char *fmt, ...) {
 #ifdef __debug__ 
     va_list ap;    
     va_start(ap, fmt);
-    vlog("-D-", fmt, ap);
+    vlog("[D]:", fmt, ap);
     va_end(ap);
 #endif
 }
