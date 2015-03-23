@@ -138,6 +138,7 @@ struct prog_context * prog_exec(const char* cmd, int flg) {
             dup2(blackhole_fd, STDOUT_FILENO);
         }
 
+        /** hanld child process stderr */
         if (flg & CHILD_IO_STDERR_REDIRECT_TO_STDOUT) {
             dup2(stdout_pipe[PIPE_WRITE_PORT],STDERR_FILENO);
         }
@@ -149,6 +150,7 @@ struct prog_context * prog_exec(const char* cmd, int flg) {
             dup2(blackhole_fd, STDERR_FILENO);
         }
 
+        /** execute the command */
         if (cnt->child_exec_with_shell) {
             dlog("exec %s\n", cmd);
             execl (SHELL, SHELL, "-c",cmd, NULL);
@@ -183,6 +185,7 @@ struct prog_context * prog_exec(const char* cmd, int flg) {
         /* This is the parent process. */
         cnt->child_pid = pid;
 
+        /* close unused port and save opened port */
         if (cnt->child_io_stdin_pipe) {
             close(stdin_pipe[PIPE_READ_PORT]);
             cnt->fd_in = stdin_pipe[PIPE_WRITE_PORT];
@@ -279,6 +282,7 @@ int prog_communicate(struct prog_context *context,
     int in_left_len  = strlen(input);
 
     while(1) {
+        dlog("loop");
         // Nothing to do, break the loop.
         if (!need_watch_out && !need_watch_err) 
             break;

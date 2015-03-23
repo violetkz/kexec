@@ -60,9 +60,9 @@ int do_interact(const char *cmd) {
 }
 
 int main(int args, char* argv[]){
-//    do_test("ls -l /usr");
-//    do_test2("./mycat ");
-//    do_test2("python ./test.py ");
+   do_test("ls -l /usr");
+//   do_test2("./mycat ");
+//   do_test2("python ./test.py ");
    do_interact("python ./interact.py");
     
     return 0;
