@@ -11,7 +11,9 @@ int do_interact(const char *cmd, int flg) {
     printf("cmd: [%s] Flg: [%d]\n", cmd, flg);
     struct prog_context *cnt = prog_exec(cmd, flg); 
     int i = 0;
+    int rc = -1;
     do {
+    
         struct dynamic_buffer *obuf = dynbuffer_new();
         struct dynamic_buffer *ebuf = dynbuffer_new();
 
@@ -24,7 +26,11 @@ int do_interact(const char *cmd, int flg) {
 
         dynbuffer_free(obuf);
         dynbuffer_free(ebuf);
-    } while(prog_poll(cnt) == -1);
+
+        rc = prog_poll(cnt); 
+        printf("RC: [%d]\n", rc);
+    } while(rc == -1);
+    progcnx_free(cnt);
     return 0;
 }
 

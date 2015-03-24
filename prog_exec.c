@@ -127,7 +127,6 @@ struct prog_context * prog_exec(const char* cmd, int flg) {
             dup2(stdin_pipe[PIPE_READ_PORT],STDIN_FILENO);
         }
         
-        
         /** handle child process stdout */
         if (cnt->child_io_stdout_pipe)    {
             close(stdout_pipe[PIPE_READ_PORT]);
