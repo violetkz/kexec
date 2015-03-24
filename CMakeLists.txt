@@ -10,7 +10,7 @@ set(SRC
     trace.c
     )
 
-add_definitions("-D __debug__")
+add_definitions("-D __debug__ -g")
 add_library(kexec STATIC ${SRC})
 
 add_subdirectory(test)
