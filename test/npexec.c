@@ -28,7 +28,7 @@ int do_test2(const char* cmd) {
    struct dynamic_buffer *obuf = dynbuffer_new();
    struct dynamic_buffer *ebuf = dynbuffer_new();
    
-   prog_communicate(cnt, "keyxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n\n", obuf, ebuf);
+   prog_communicate(cnt, "keyxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n\n", obuf, ebuf, 5);
    printf("** xout: %s\n", dynbuffer_data(obuf));
    int ret = prog_wait(cnt);
    printf("** exit status: %d\n", ret);
@@ -48,7 +48,7 @@ int do_interact(const char *cmd) {
        char buff[32];
        snprintf(buff, 32, "==> %d\n", i);
        printf("** in: %s", buff);
-       prog_communicate(cnt, buff, obuf, ebuf);
+       prog_communicate(cnt, buff, obuf, ebuf, 5);
        printf("** xout: %s\n", dynbuffer_data(obuf));
        printf("** xerr: %s\n", dynbuffer_data(ebuf));
 

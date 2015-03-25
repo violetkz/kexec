@@ -126,6 +126,9 @@ struct prog_context * prog_exec(const char* cmd, int flg) {
             close(stdin_pipe[PIPE_WRITE_PORT]);
             dup2(stdin_pipe[PIPE_READ_PORT],STDIN_FILENO);
         }
+        else {
+            dup2(blackhole_fd, STDIN_FILENO);
+        }
         
         /** handle child process stdout */
         if (cnt->child_io_stdout_pipe)    {
@@ -150,7 +153,7 @@ struct prog_context * prog_exec(const char* cmd, int flg) {
         }
 
         /** execute the command */
-        if (cnt->child_exec_with_shell) {
+        if (flg & CHILD_EXEC_WITH_SHELL) {
             dlog("exec %s\n", cmd);
             execl (SHELL, SHELL, "-c",cmd, NULL);
         }
@@ -244,7 +247,8 @@ int prog_wait(struct prog_context *context) {
 int prog_communicate(struct prog_context *context, 
         const char* input,
         struct dynamic_buffer *out_buf,
-        struct dynamic_buffer *err_buf) {
+        struct dynamic_buffer *err_buf,
+        int timeout) {
 
     if (!context) { 
         return -1;
@@ -259,7 +263,6 @@ int prog_communicate(struct prog_context *context,
     int need_watch_err = 0;
     int need_watch_in  = 0;
 
-    struct timeval tv;
 
     if (context->child_io_stdout_pipe) {
         fd_out = context->fd_out;
@@ -273,22 +276,28 @@ int prog_communicate(struct prog_context *context,
         fcntl(fd_err, F_SETFL, O_NONBLOCK);
     }
 
-    if (context->child_io_stdin_pipe)  {
+    int in_left_len  = (input != NULL) ? strlen(input) : 0;
+
+    if (context->child_io_stdin_pipe && in_left_len > 0)  {
         fd_in  = context->fd_in;
         need_watch_in  = 1;
     }
 
-    int in_left_len  = strlen(input);
+    struct timeval tv;
+    struct timeval *tvptr = NULL; 
+    if (timeout >=0) {
+        /* set default timeout value 5s */
+        tv.tv_sec  = timeout; 
+        tv.tv_usec = 0;
+        tvptr = &tv;
+    }
 
     while(1) {
         dlog("loop");
         // Nothing to do, break the loop.
-        if (!need_watch_out && !need_watch_err) 
+        if (!need_watch_out && !need_watch_err && !need_watch_in) 
             break;
 
-        /* set default timeout value 5s */
-        tv.tv_sec  = 5; 
-        tv.tv_usec = 0;
 
         FD_ZERO (&read_fd_set);
         FD_ZERO (&write_fd_set);
@@ -297,7 +306,7 @@ int prog_communicate(struct prog_context *context,
         if (need_watch_in && in_left_len > 0)    FD_SET(fd_in, &write_fd_set);
 
         int max_fd = (fd_out > fd_err) ? fd_out : fd_err;
-        int ret = select(max_fd + 1, &read_fd_set, &write_fd_set, NULL, &tv);
+        int ret = select(max_fd + 1, &read_fd_set, &write_fd_set, NULL, tvptr);
         if (ret < 0) {
             perror("select");
             return -1;
@@ -341,6 +350,16 @@ int prog_communicate(struct prog_context *context,
             int len = write(fd_in, input, in_left_len);
             in_left_len -= len;
             input += len;
+
+            if (in_left_len <= 0) {
+                dlog("Wrote all data to stdin.");
+                need_watch_in = 0;   
+                /* add data be sent, so close fd_in. in some case, it is
+                 * necessary, such as 'cat', it willn't exit unless recieve  EOF.
+                 */
+                close(fd_in); 
+                fd_in = -1;
+            }
             dlog("wrote bytes [%d] into fd_in", len);
         }
     }

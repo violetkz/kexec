@@ -65,7 +65,8 @@ struct dynamic_buffer;
 int prog_communicate(struct prog_context *context, 
                const char* input,
                struct dynamic_buffer *out_buf, 
-               struct dynamic_buffer *err_buf);
+               struct dynamic_buffer *err_buf,
+               int timeout);
 
 /** terminal the child process */
 int prog_terminal(struct prog_context* cnx);

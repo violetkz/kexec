@@ -23,8 +23,10 @@ struct dynamic_buffer *dynbuffer_new() {
     if (newbuf) {
         /* init a space which length is 4096 as default */
         newbuf->buf_len  = 4096;
+        newbuf->sum_len  = 0;
         newbuf->curr_pos = newbuf->start_pos = (char *) malloc (newbuf->buf_len);
         newbuf->flg      = DYNAMIC_BUF_ATTACHED_MOD;
+        memset(newbuf->start_pos, 0x00, newbuf->buf_len);
     }
     return newbuf;
 }
@@ -66,7 +68,7 @@ char *dynbuffer_writable_pos(struct dynamic_buffer *dbuf) {
 }
 
 char *dynbuffer_data(struct dynamic_buffer *dbuf) {
-    if (dbuf) return dbuf->start_pos;
+    if (dbuf && dbuf->sum_len >0) return dbuf->start_pos;
     else      return NULL;
 }
 
@@ -87,6 +89,7 @@ int  dynbuffer_acquire(struct dynamic_buffer *dbuf, unsigned int len) {
                 dbuf->buf_len = new_len; 
                 /* re-calc the writable position in new buffer */
                 dbuf->curr_pos  = dbuf->start_pos + dbuf->sum_len;
+                memset(dbuf->curr_pos, 0x00, dbuf->buf_len - dbuf->sum_len);
                 ret = len;
             }
             else {
