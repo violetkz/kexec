@@ -27,16 +27,3 @@
  *  @endcode
  */
 int shell_exec(const char *cmd, char **out);
-
-
-
-#if 0
-typedef void (*io_func) (unsigned char* data, unsigned int size);
-struct prog_io_context {
-    io_func read_out;
-    io_func read_err;
-    FILE    *input;
-    int      timeout;
-};
-int prog_exec.const char* cmd, struct prog_io_context* ioc);
-#endif

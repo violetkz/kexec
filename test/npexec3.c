@@ -13,13 +13,23 @@ int do_test(const char *cmd, int flg) {
     int i = 0;
     int rc = -1;
 
+    char *c;
+#if defined(__APPLE__)
+    rc = shell_exec("base64 -b 80 /bin/echo",  &c);
+#elif defined(__linux__)
+    rc = shell_exec("base64 /bin/echo", &c);
+#endif
+    
+    if (rc != 0) {
+        fprintf(stderr, "shex_exec failed.");
+        exit(EXIT_FAILURE);
+    }
+    printf("**str len: %ld\n", strlen(c));
+
     struct dynamic_buffer *obuf = dynbuffer_new();
     struct dynamic_buffer *ebuf = dynbuffer_new();
 
-    //char buff[32];
-    //snprintf(buff, 32, "==> %d\n", i);
-    //printf("** in: %s", buff);
-    prog_communicate(cnt, NULL, obuf, ebuf, 5);
+    prog_communicate(cnt, c, obuf, ebuf, 5);
     printf("** xout [%d]:%s.\n", dynbuffer_data_len(obuf), dynbuffer_data(obuf));
     printf("** xerr [%d]:%s.\n", dynbuffer_data_len(ebuf), dynbuffer_data(ebuf));
 
@@ -29,10 +39,12 @@ int do_test(const char *cmd, int flg) {
     rc = prog_wait(cnt); 
     printf("RC: [%d]\n", rc);
     progcnx_free(cnt);
+
+    free(c);
     return 0;
 }
 
 int main(int args, char* argv[]){
-
+    do_test("cat -b -", 0);
     return 0;
 }

@@ -18,6 +18,7 @@
 #define SHELL "/bin/sh"
 #define PIPE_READ_PORT  0
 #define PIPE_WRITE_PORT 1
+#define RW_NBYTE_LEN    512
 
 
 struct prog_context {
@@ -180,7 +181,7 @@ struct prog_context * prog_exec(const char* cmd, int flg) {
             execvp(arr[0], arr);
         }
 
-        //never perform this statement if 'execvp' successful.
+        /* never perform this statement if 'execvp' successful. */
         _exit (EXIT_FAILURE); 
     }
     else {
@@ -227,7 +228,6 @@ int prog_poll(struct prog_context *context) {
 int prog_wait(struct prog_context *context) {
     int status = 0;
     if (context && context->state == 0) {
-        //int rc = waitpid (pid, &status, WNOHANG); 
         /*Wait for the child to complete.  */
         if (waitpid (context->child_pid, &status, 0) != context->child_pid) {
             status = -1;
@@ -283,10 +283,10 @@ int prog_communicate(struct prog_context *context,
         need_watch_in  = 1;
     }
 
+    /* set timeout */
     struct timeval tv;
     struct timeval *tvptr = NULL; 
     if (timeout >=0) {
-        /* set default timeout value 5s */
         tv.tv_sec  = timeout; 
         tv.tv_usec = 0;
         tvptr = &tv;
@@ -297,7 +297,6 @@ int prog_communicate(struct prog_context *context,
         // Nothing to do, break the loop.
         if (!need_watch_out && !need_watch_err && !need_watch_in) 
             break;
-
 
         FD_ZERO (&read_fd_set);
         FD_ZERO (&write_fd_set);
@@ -326,7 +325,6 @@ int prog_communicate(struct prog_context *context,
                 else {
                     dlog("read eof for fd_out.");
                     need_watch_out = 0;
-                    //break;
                 }
             }
         }
@@ -341,15 +339,18 @@ int prog_communicate(struct prog_context *context,
                 else {
                     dlog("read eof for fd_err.");
                     need_watch_err = 0;
-                    //break;
                 }
             }
         }
 
         if (need_watch_in && FD_ISSET(fd_in, &write_fd_set)) {
-            int len = write(fd_in, input, in_left_len);
-            in_left_len -= len;
-            input += len;
+            int nbyte = (in_left_len < RW_NBYTE_LEN)? in_left_len : RW_NBYTE_LEN;
+            int len = write(fd_in, input, nbyte);
+            if (len != -1) {
+                in_left_len -= len;
+                input += len;
+            }
+            else { perror("write failed"); break;}
 
             if (in_left_len <= 0) {
                 dlog("Wrote all data to stdin.");
@@ -393,3 +394,4 @@ int prog_kill(struct prog_context* cnx) {
 #undef SHELL
 #undef PIPE_READ_PORT
 #undef PIPE_WRITE_PORT
+#undef RW_NBYTE_LEN
