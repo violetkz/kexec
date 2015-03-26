@@ -8,13 +8,13 @@
 
 
 //static int fd_log_desc = STDERR_FILENO;
-static FILE* fd_log_desc = NULL;
+FILE* fd_log_desc = NULL;
 
 void log_set_desc(FILE* fp) {
     fd_log_desc = fp;
 }
 
-static void vlog(const char* prefix, char* fmt, va_list ap) {
+static void vlog(char* prefix, char* fmt, va_list ap) {
     FILE* fd_log =  (fd_log_desc != NULL) ? fd_log_desc : stderr;
         
     fprintf(fd_log, prefix);

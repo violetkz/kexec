@@ -38,6 +38,10 @@ int main(int args, char* argv[]){
     //    do_test2("python ./test.py ");
     //do_test("python ./interact.py", 0);
     FILE *log = fopen("npx2.log", "w+");
+    if (log == NULL) {
+        fprintf(stderr, "open log fail failed");
+        return EXIT_FAILURE;
+    }
     log_set_desc(log);    
     dlog("--------- test default arg");
     do_test("cat npexec.c", 0); 

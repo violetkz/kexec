@@ -16,7 +16,7 @@ int do_test(const char *cmd, int flg) {
     char *c;
 #if defined(__APPLE__)
     rc = shell_exec("base64 -b 80 /bin/echo",  &c);
-#elif defined(__linux__)
+#elif defined(__linux__) || defined(__unix)
     rc = shell_exec("base64 /bin/echo", &c);
 #endif
     

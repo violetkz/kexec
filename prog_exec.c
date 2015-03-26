@@ -325,6 +325,7 @@ int prog_communicate(struct prog_context *context,
                 else {
                     dlog("read eof for fd_out.");
                     need_watch_out = 0;
+                    close(fd_out);
                 }
             }
         }
@@ -338,6 +339,7 @@ int prog_communicate(struct prog_context *context,
                 }
                 else {
                     dlog("read eof for fd_err.");
+                    close(fd_err);
                     need_watch_err = 0;
                 }
             }
