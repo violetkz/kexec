@@ -45,7 +45,7 @@ int do_test(const char *cmd, int flg) {
 }
 
 int main(int args, char* argv[]){
-    FILE *log = fopen("npx3.log", "w+");
+    FILE *log = fopen("logfifo", "w");
     
     if (log == NULL) { 
         fprintf(stderr, "open log failed");

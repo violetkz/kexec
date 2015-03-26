@@ -10,7 +10,21 @@ set(SRC
     trace.c
     )
 
-add_definitions("-D __debug__ -g")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall -D __debug__ -g")
 add_library(kexec STATIC ${SRC})
 
+
+set (CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_SOURCE_DIR}/kexeclib)
+
+install(FILES 
+    dynamic_buffer.h
+    shell_exec.h
+    prog_exec.h
+    DESTINATION include )
+
+install(TARGETS kexec
+    RUNTIME DESTINATION bin
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
+    )
 add_subdirectory(test)

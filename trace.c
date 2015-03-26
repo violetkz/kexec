@@ -17,7 +17,7 @@ void log_set_desc(FILE* fp) {
 static void vlog(char* prefix, char* fmt, va_list ap) {
     FILE* fd_log =  (fd_log_desc != NULL) ? fd_log_desc : stderr;
         
-    fprintf(fd_log, prefix);
+    fprintf(fd_log, "%s ", prefix);
     vfprintf(fd_log, fmt, ap);
     fprintf(fd_log, "\n");
     
