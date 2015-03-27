@@ -1,8 +1,23 @@
+/*
+ * This code is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Library General Public
+ * License as published by the Free Software Foundation; either
+ * version 3 of the License, or (at your option) any later version.
+ *
+ * This code is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Library General Public License for more details.
+ */
 #ifndef __PROG_EXEC_H___
 #define __PROG_EXEC_H___
 
 #include <stdio.h>
 #include <stdint.h>
+
+#ifdef  __cplusplus
+extern "C" {
+#endif 
 
 /*
  * spawn new processes, connect to their input/output/error pipes,
@@ -74,4 +89,7 @@ int prog_terminal(struct prog_context* cnx);
 /** kill the chile process */
 int prog_kill(struct prog_context* cnx);
 
+#ifdef  __cplusplus
+}
+#endif 
 #endif //~__PROG_EXEC_H___

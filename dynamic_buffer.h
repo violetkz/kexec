@@ -1,5 +1,20 @@
+/*
+ * This code is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Library General Public
+ * License as published by the Free Software Foundation; either
+ * version 3 of the License, or (at your option) any later version.
+ *
+ * This code is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Library General Public License for more details.
+ */
 #ifndef __DYNAMIC_BUFFER___H
 #define __DYNAMIC_BUFFER___H
+
+#ifdef  __cplusplus
+extern "C" {
+#endif 
 
 /**
  * the simple implementation of dynamic buffer.
@@ -55,5 +70,9 @@ int dynbuffer_consume(struct dynamic_buffer *dbuf, unsigned int len);
  * @return the current writable position pointer.
  */
 char *dynbuffer_write(struct dynamic_buffer* dbuf, const char *s, size_t len);
+
+#ifdef  __cplusplus
+}
+#endif 
 
 #endif //~__DYNAMIC_BUFFER___H
