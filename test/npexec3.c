@@ -45,6 +45,13 @@ int do_test(const char *cmd, int flg) {
 }
 
 int main(int args, char* argv[]){
+    FILE *log = fopen("npx3.log", "w+");
+    
+    if (log == NULL) { 
+        fprintf(stderr, "open log failed");
+        return -1;
+    }
+    log_set_desc(log);
     do_test("cat -b -", 0);
     return 0;
 }

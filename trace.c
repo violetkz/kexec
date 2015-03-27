@@ -20,13 +20,19 @@ static void vlog(const char* prefix, char* fmt, va_list ap) {
     fprintf(fd_log, prefix);
     vfprintf(fd_log, fmt, ap);
     fprintf(fd_log, "\n");
+    
+    //due to share this between parent process and chile process, 
+    //so has to disable the cache to avoid lose message.
+    fflush(fd_log);
 }
 
 void dlog(char *fmt, ...) {
 #ifdef __debug__ 
     va_list ap;    
     va_start(ap, fmt);
-    vlog("[D]:", fmt, ap);
+    char prefix[16];
+    snprintf(prefix, 16, "L[%c] P[%d]: ",'D',getpid());
+    vlog(prefix, fmt, ap);
     va_end(ap);
 #endif
 }
