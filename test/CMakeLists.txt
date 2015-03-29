@@ -1,13 +1,13 @@
 
 include_directories(. ..)
-add_executable(npx npexec.c)
-add_executable(npx2 npexec2.c)
-add_executable(npx3 npexec3.c)
-target_link_libraries(npx kexec)
-target_link_libraries(npx2 kexec)
-target_link_libraries(npx3 kexec)
+add_executable(test test.c)
+add_executable(test2 test2.c)
+add_executable(test3 test3.c)
+target_link_libraries(test kexec)
+target_link_libraries(test2 kexec)
+target_link_libraries(test3 kexec)
 
-install(TARGETS npx npx2 npx3
+install(TARGETS test test2 test3
             RUNTIME DESTINATION bin
             LIBRARY DESTINATION lib
             ARCHIVE DESTINATION lib
