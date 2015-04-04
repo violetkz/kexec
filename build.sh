@@ -1,7 +1,7 @@
 #!/bin/sh
 
 BUILD_DIR=./build
-BUILD_TYPE=Relese
+BUILD_TYPE=Release
 
 if [ $# -gt 0 ];then 
     case "$1" in 

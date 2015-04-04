@@ -1,5 +1,21 @@
+/*
+ * This code is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Library General Public
+ * License as published by the Free Software Foundation; either
+ * version 3 of the License, or (at your option) any later version.
+ *
+ * This code is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Library General Public License for more details.
+ */
+#ifndef ___shell_exec__h_
+#define ___shell_exec__h_
 #include <stdio.h>
 
+#ifdef  __cplusplus
+extern "C" {
+#endif 
 /**
  *  Execute a command with default shell (/bin/sh) and save 
  *  the output to 'out'. 
@@ -27,3 +43,7 @@
  *  @endcode
  */
 int shell_exec(const char *cmd, char **out);
+#ifdef  __cplusplus
+}
+#endif 
+#endif /*~___shell_exec__h_ */
