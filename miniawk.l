@@ -1,3 +1,4 @@
+%option noyywrap
 %{
 #include <stdio.h> /* just for printf */
 enum tokent {
@@ -17,12 +18,11 @@ enum tokent {
                 int escapeflg = 0;
                 while (1) {
                     c = input();
-                    /*
-                    if (c == EOF) {
-                        puts("bad action str.\n");
+                    putchar(c);
+                    if (c == EOF || c == '\0') {
+                        puts("[error]: bad action str.\n");
                         yyterminate();
                     }
-                    */
                     if (escapeflg == 0) {  /* the presourse char is not escape char */
                         if (c == '/')  break;
                         if (c != '\\') action[i++] = c;
@@ -44,15 +44,11 @@ enum tokent {
                 }
                 action[i] = '\0';
                 puts(action);
-                if (c == EOF) {
-                    puts("bad action str.\n");
-                    yyterminate();
-                }
                 return T_ACTION;
             }
 "{"         { puts("{"); return T_LEFT_BRACE; }
 "}"         { puts("}"); return T_RIGHT_BRACE; }
-.        ECHO;
+.           ECHO;
 <<EOF>>     { yyterminate(); }
 %%
 
