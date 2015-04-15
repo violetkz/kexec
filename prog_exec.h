@@ -51,13 +51,12 @@ FILE *progcnx_get_stdout(struct prog_context *cnt);
  */
 FILE *progcnx_get_stderr(struct prog_context *cnt);
 
-
+#define PROG_EXEC_DEFAULT_PARAM               0x0
 #define CHILD_IO_STDIN_CLOSE                  0x1<<0
 #define CHILD_IO_STDOUT_CLOSE                 0x1<<1
 #define CHILD_IO_STDERR_CLOSE                 0x1<<2
 #define CHILD_IO_STDERR_REDIRECT_TO_STDOUT    0x1<<3
 #define CHILD_EXEC_WITH_SHELL                 0x1<<4
-#define PROG_EXEC_DEFAULT_PARAM               0x0
 
 /* spawn a new process */
 struct prog_context *prog_exec(const char* cmd, int flg);
