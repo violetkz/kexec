@@ -71,7 +71,7 @@ int shlex_split(const char *p, char * argv[], int *argv_len) {
     char *token_buff = NULL;
     int i = 0;
     int pos = 0;
-    while (*p != '\0') {
+    while (p != NULL && *p != '\0') {
         char c = *p;
         switch (c) {
         case ' ':
@@ -80,16 +80,31 @@ int shlex_split(const char *p, char * argv[], int *argv_len) {
             break;
         case '\'':
         case '"':
-            if (*argv_len - 1 > pos ) argv[pos++] = parse_token_string(&p);
+            if (*argv_len - 1 > pos ) {
+                argv[pos++] = parse_token_string(&p);
+            }
+            else return 1;
             break;
         default:
-            if (*argv_len - 1> pos) argv[pos++] = parse_token_cmdarg(&p);
+            if (*argv_len - 1> pos) {
+                argv[pos++] = parse_token_cmdarg(&p);
+            }
+            else return 1;
+
             break;
         }
     }
     argv[pos] = NULL;  /* append a NULL as terminal flag */
     *argv_len = pos;   /* update used len to outside */
     return 0;
+}
+
+void free_shlex_argv(char* argv[], int argv_len) {
+    int i = 0;
+    for(; i < argv_len; ++i) {
+        free(argv[i]);
+        argv[i] = NULL;
+    }
 }
 
 #ifdef _shlex_main_

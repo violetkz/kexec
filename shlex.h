@@ -14,10 +14,31 @@
 
 
 /** 
- *  /bin/ls -rl /tmp => ['/bin/ls', '-rl', '/tmp']
- *  echo "ls -rl \" " =>['echo', 'ls -rl " ']
+ * A simple lexical analyzers for command-line string of unix shell.
+ * 
+ * e.g.
+ * `/bin/ls -rl /tmp`  => ['/bin/ls', '-rl', '/tmp']
+ * `echo "ls -rl \" "` => ['echo', 'ls -rl " ']
+ * 
+ * @code
+ * char argv[256];
+ * int arrlen = sizeof(argv) / sizeof(argv[0]);
+ * 
+ * const char *cmd = "/bin/ls -rl /tmp";
+ * int rc = shlex_split(cmd, argv, &arrlen);
+ * if (rc != 0) {
+ *      fprintf(stderr,"func shlex_split failed. cmd:[%s].", cmd);
+ * }
+ * // do something else.
+ *
+ * //finally, we must free the memory used by argv
+ * free_shlex_argv(argv, arrlen);
+ * }
+ * @endcode
  */
 int shlex_split(const char *cmd, char * argv[], int *argv_len); 
 
+/* free the memory used by func shlex_split. */
+void free_shlex_argv(char* argv[], int argv_len);
 
 #endif //~_SIMPLE_SH_LEX_H____
