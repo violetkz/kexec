@@ -189,6 +189,11 @@ struct prog_context * prog_exec(const char* cmd, int flg) {
                 i++; 
             }
 #endif
+            /* er, I have a qeustion, do we need release the memory which malloced for 
+             * command arguments? if it does, I don't know where the release memory codes 
+             * should be put.
+             * so, I guess it doesn't need. -_-!!!
+             */ 
             execvp(arr[0], arr);
         }
 
