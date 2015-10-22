@@ -9,6 +9,10 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Library General Public License for more details.
  */
+/*                      
+ *                                              Ken <proxy.vk@gmail.com>
+ *                                                            2015-10-22
+ */
 #ifndef __DYNAMIC_BUFFER___H
 #define __DYNAMIC_BUFFER___H
 
@@ -21,7 +25,7 @@ extern "C" {
  * 
  * Note:
  * the dynamic buffer is implemented by C standard function 'realloc' 
- * so don't use it for large data. The buffer initial length is 4096,
+ * so don't use it for large data. The initial length of buffer is 4096 bytes,
  * and each time increase double current length.
  */
 struct dynamic_buffer;

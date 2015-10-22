@@ -9,6 +9,10 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Library General Public License for more details.
  */
+/*                      
+ *                                              Ken <proxy.vk@gmail.com>
+ *                                                            2015-10-22
+ */
 #ifndef _SIMPLE_SH_LEX_H____
 #define _SIMPLE_SH_LEX_H____
 
