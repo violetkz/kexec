@@ -251,7 +251,7 @@ int prog_poll(struct prog_context *context) {
 }
 
 int prog_wait(struct prog_context *context) {
-    int status = 0;
+    int status = context->state;
     if (context && context->state == 0) {
         /*Wait for the child to complete.  */
         if (waitpid (context->child_pid, &status, 0) != context->child_pid) {

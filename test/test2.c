@@ -34,11 +34,10 @@ int do_test(const char *cmd, int flg) {
     printf("** xout [%d]:%s.\n", dynbuffer_data_len(obuf), dynbuffer_data(obuf));
     printf("** xerr [%d]:%s.\n", dynbuffer_data_len(ebuf), dynbuffer_data(ebuf));
 
-    dynbuffer_free(obuf);
-    dynbuffer_free(ebuf);
-
     rc = prog_wait(cnt); 
     printf("RC: [%d]\n", rc);
+    dynbuffer_free(obuf);
+    dynbuffer_free(ebuf);
     progcnx_free(cnt);
     return 0;
 }
@@ -83,7 +82,7 @@ int main(int args, char* argv[]){
             CHILD_EXEC_WITH_SHELL|CHILD_IO_STDERR_CLOSE|CHILD_IO_STDOUT_CLOSE); 
 
     dlog("--------- test CHILD_EXEC_WITH_SHELL|CHILD_IO_STDIN_CLOSE");
-    do_test("cat", CHILD_EXEC_WITH_SHELL|CHILD_IO_STDIN_CLOSE); 
+    do_test("echo | cat", CHILD_EXEC_WITH_SHELL|CHILD_IO_STDIN_CLOSE); 
 
     return 0;
 }
