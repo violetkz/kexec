@@ -65,15 +65,15 @@ static char *parse_token_cmdarg(const char **pp) {
     *pp = p;
 
     char *data = dynbuffer_data(token_buff);
-    //printf("cmdarg token: ^%s^\n", data);
+    // printf("cmdarg token: ^%s^\n", data);
     dynbuffer_free(token_buff);
     return data;
 }
 
 
 int shlex_split(const char *p, char * argv[], int *argv_len) {
-    char *token_buff = NULL;
-    int i = 0;
+    // char *token_buff = NULL;
+    // int i = 0;
     int pos = 0;
     while (p != NULL && *p != '\0') {
         char c = *p;

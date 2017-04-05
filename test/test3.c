@@ -21,7 +21,6 @@ int do_test(const char *cmd, int flg) {
     printf("------------------------\n");
     printf("cmd: [%s] Flg: [%d]\n", cmd, flg);
     struct prog_context *cnt = prog_exec(cmd, flg); 
-    int i = 0;
     int rc = -1;
 
     char *c;
