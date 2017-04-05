@@ -34,11 +34,12 @@
 #define PIPE_READ_PORT  0
 #define PIPE_WRITE_PORT 1
 #define RW_NBYTE_LEN    512
+#define FD_UNSET        -1
 
 
 struct prog_context {
-    int state;
-    pid_t child_pid;
+    int     state;
+    pid_t   child_pid;
     int     fd_in;
     int     fd_out;
     int     fd_err;
@@ -54,9 +55,9 @@ struct prog_context *progcnx_new() {
     struct prog_context *n = 
         (struct prog_context *) malloc (sizeof(struct prog_context));
     if (n) {
-        //memset(n, 0x00, sizeof(struct prog_context));
-        n->fd_in = n->fd_out = n->fd_err  = n->fd_blackhold -1;
-        n->child_io_stdin_pipe = 1;
+        n->state = 0;
+        n->fd_in = n->fd_out = n->fd_err  = n->fd_blackhold  = FD_UNSET;
+        n->child_io_stdin_pipe  = 1;
         n->child_io_stdout_pipe = 1;
         n->child_io_stderr_pipe = 1;
         /* init with -2 to avoid misuse, see `man 2 kill` */
@@ -67,22 +68,25 @@ struct prog_context *progcnx_new() {
 
 void progcnx_free(struct prog_context *cnt) {
     if (cnt) {
-        if (cnt->fd_blackhold != -1) close(cnt->fd_blackhold);
+        if (cnt->fd_blackhold != FD_UNSET) close(cnt->fd_blackhold);
+        if (cnt->fd_in  != FD_UNSET) close(cnt->fd_in);
+        if (cnt->fd_out != FD_UNSET) close(cnt->fd_out);
+        if (cnt->fd_err != FD_UNSET) close(cnt->fd_err);
         free(cnt);
     }
 }
 
 FILE *progcnx_get_stdin(struct prog_context *cnt) {
-    return (cnt && cnt->fd_in != -1) ?  fdopen(cnt->fd_in, "w") : NULL;
+    return (cnt && cnt->fd_in != FD_UNSET) ?  fdopen(cnt->fd_in, "w") : NULL;
 }
 FILE *progcnx_get_stdout(struct prog_context *cnt) {
-    return (cnt && cnt->fd_out != -1) ? fdopen(cnt->fd_out, "r") : NULL;
+    return (cnt && cnt->fd_out != FD_UNSET) ? fdopen(cnt->fd_out, "r") : NULL;
 }
 FILE *progcnx_get_stderr(struct prog_context *cnt) {
-    return (cnt && cnt->fd_err != -1) ? fdopen(cnt->fd_err, "r") : NULL;
+    return (cnt && cnt->fd_err != FD_UNSET) ? fdopen(cnt->fd_err, "r") : NULL;
 }
 
-
+/* make a blackhole if need */
 int make_blackhole(struct prog_context* cnt, int flg) {
 
     if ((flg & CHILD_IO_STDOUT_CLOSE) || (flg & CHILD_IO_STDERR_CLOSE)) {
@@ -143,7 +147,8 @@ struct prog_context * prog_exec(const char* cmd, int flg) {
             dup2(stdin_pipe[PIPE_READ_PORT],STDIN_FILENO);
         }
         else {
-            dup2(blackhole_fd, STDIN_FILENO);
+            /* dup2(blackhole_fd, STDIN_FILENO); */
+            fclose(STDIN_FILENO); // close stdin.
         }
         
         /** handle child process stdout */
@@ -277,7 +282,7 @@ int prog_communicate(struct prog_context *context,
     fd_set read_fd_set, write_fd_set;
 
     int fd_out, fd_err, fd_in;
-    fd_out = fd_err = fd_in = -1;
+    fd_out = fd_err = fd_in = FD_UNSET;
 
     int need_watch_out = 0;
     int need_watch_err = 0;
@@ -381,7 +386,7 @@ int prog_communicate(struct prog_context *context,
                  * necessary, such as 'cat', it willn't exit unless recieve  EOF.
                  */
                 close(fd_in); 
-                fd_in = -1;
+                fd_in = FD_UNSET;
             }
             dlog("wrote bytes [%d] into fd_in", len);
         }
