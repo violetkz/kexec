@@ -24,6 +24,7 @@
 #include <unistd.h>
 #include <signal.h>
 #include <errno.h>
+#include <limits.h>
 
 #include "prog_exec.h"
 #include "dynamic_buffer.h"
@@ -36,9 +37,13 @@
 #define RW_NBYTE_LEN    512
 #define FD_UNSET        -1
 
+enum prog_interanl_state {
+    PROG_STATE_OK   = 0,
+    PROG_STATE_UNEXPECT = INT_MAX
+};
+
 
 struct prog_context {
-    int     state;
     pid_t   child_pid;
     int     fd_in;
     int     fd_out;
@@ -49,13 +54,15 @@ struct prog_context {
     unsigned char  child_io_stdout_pipe:2; 
     unsigned char  child_io_stderr_pipe:2; 
     unsigned char  child_exec_with_shell:2; 
+
+    enum prog_interanl_state     state;
 };
 
 struct prog_context *progcnx_new() {
     struct prog_context *n = 
         (struct prog_context *) malloc (sizeof(struct prog_context));
     if (n) {
-        n->state = 0;
+        n->state = PROG_STATE_OK;
         n->fd_in = n->fd_out = n->fd_err  = n->fd_blackhold  = FD_UNSET;
         n->child_io_stdin_pipe  = 1;
         n->child_io_stdout_pipe = 1;
@@ -89,9 +96,10 @@ FILE *progcnx_get_stderr(struct prog_context *cnt) {
 /* make a blackhole if need */
 int make_blackhole(struct prog_context* cnt, int flg) {
 
-    if ((flg & CHILD_IO_STDOUT_CLOSE) || (flg & CHILD_IO_STDERR_CLOSE)) {
+    if ((flg & SUBPROC_IGNORE_STDOUT) || (flg & SUBPROC_IGNORE_STDERR)) {
         cnt->fd_blackhold =  open("/dev/null", O_RDWR); 
         if (cnt->fd_blackhold == -1) {
+            cnt->state = PROG_STATE_UNEXPECT;
             perror("open blackhole failed");
         }
     }
@@ -99,7 +107,6 @@ int make_blackhole(struct prog_context* cnt, int flg) {
 }
 
 struct prog_context * prog_exec(const char* cmd, int flg) {
-    int status;
     pid_t pid;
 
     int  stdin_pipe[2];
@@ -110,26 +117,26 @@ struct prog_context * prog_exec(const char* cmd, int flg) {
     if (!cnt) {
         return NULL;
     }
-    if (flg & CHILD_IO_STDIN_CLOSE)  cnt->child_io_stdin_pipe = 0;
-    if (flg & CHILD_IO_STDOUT_CLOSE) cnt->child_io_stdout_pipe = 0; 
-    if (flg & CHILD_IO_STDERR_CLOSE || flg & CHILD_IO_STDERR_REDIRECT_TO_STDOUT)
+    if (flg & SUBPROC_CLOSE_STDIN)  cnt->child_io_stdin_pipe = 0;
+    if (flg & SUBPROC_IGNORE_STDOUT) cnt->child_io_stdout_pipe = 0; 
+    if (flg & SUBPROC_IGNORE_STDERR || flg & SUBPROC_STDERR_REDIRECT_TO_STDOUT)
         cnt->child_io_stderr_pipe = 0; 
 
     // make pipe for stdin
     if (cnt->child_io_stdin_pipe && (pipe(stdin_pipe) < 0)) {
-        cnt->state = -1; 
+        cnt->state = PROG_STATE_UNEXPECT;
         return cnt;
     }
 
     // make pipe for stdout
     if (cnt->child_io_stdout_pipe && (pipe(stdout_pipe) < 0)) {
-        cnt->state = -1; 
+        cnt->state = PROG_STATE_UNEXPECT;
         return cnt;
     }
 
     // make pipe for stderr
     if (cnt->child_io_stderr_pipe && (pipe(stderr_pipe) < 0)) {
-        cnt->state = -1; 
+        cnt->state = PROG_STATE_UNEXPECT;
         return cnt;
     }
 
@@ -138,7 +145,10 @@ struct prog_context * prog_exec(const char* cmd, int flg) {
     pid = fork ();
     if (pid < 0) {
         /* The fork failed.  Report failure.  */
-        status = cnt->state = -1;
+        // cnt->state = PROG_STATE_UNEXPECT;
+        dlog("fork failed.");
+        progcnx_free(cnt);
+        return NULL;
     }
     else if (pid == 0) {
         /* This is the child process.  Execute the supprocess. */
@@ -152,7 +162,7 @@ struct prog_context * prog_exec(const char* cmd, int flg) {
         }
         
         /** handle child process stdout */
-        if (cnt->child_io_stdout_pipe)    {
+        if (cnt->child_io_stdout_pipe) {
             close(stdout_pipe[PIPE_READ_PORT]);
             dup2(stdout_pipe[PIPE_WRITE_PORT],STDOUT_FILENO);
         }
@@ -162,7 +172,7 @@ struct prog_context * prog_exec(const char* cmd, int flg) {
         }
 
         /** hanld child process stderr */
-        if (flg & CHILD_IO_STDERR_REDIRECT_TO_STDOUT) {
+        if (flg & SUBPROC_STDERR_REDIRECT_TO_STDOUT) {
             dup2(stdout_pipe[PIPE_WRITE_PORT],STDERR_FILENO);
         }
         else if (cnt->child_io_stderr_pipe) {
@@ -174,7 +184,7 @@ struct prog_context * prog_exec(const char* cmd, int flg) {
         }
 
         /** execute the command */
-        if (flg & CHILD_EXEC_WITH_SHELL) {
+        if (flg & SUBPROC_EXEC_WITH_SHELL) {
             dlog("exec %s\n", cmd);
             execl (SHELL, SHELL, "-c",cmd, NULL);
         }
@@ -231,7 +241,7 @@ struct prog_context * prog_exec(const char* cmd, int flg) {
 }
 
 int prog_poll(struct prog_context *context) {
-    int status = 0;
+    int status = PROG_STATE_UNEXPECT;
     if (context) {
         /*Wait for the child to complete.  */
         int  ret = waitpid (context->child_pid, &status, WNOHANG); 
@@ -251,7 +261,7 @@ int prog_poll(struct prog_context *context) {
 }
 
 int prog_wait(struct prog_context *context) {
-    int status = context->state;
+    int status = PROG_STATE_UNEXPECT;
     if (context && context->state == 0) {
         /*Wait for the child to complete.  */
         if (waitpid (context->child_pid, &status, 0) != context->child_pid) {

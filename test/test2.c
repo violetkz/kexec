@@ -55,33 +55,33 @@ int main(int args, char* argv[]){
     dlog("--------- test default arg");
     do_test("cat npexec.c", 0); 
 
-    dlog("--------- test CHILD_IO_STDOUT_CLOSE");
-    do_test("cat npexec.c", CHILD_IO_STDOUT_CLOSE); 
+    dlog("--------- test SUBPROC_IGNORE_STDOUT");
+    do_test("cat npexec.c", SUBPROC_IGNORE_STDOUT); 
 
-    dlog("--------- test CHILD_IO_STDERR_CLOSE");
-    do_test("python -c \"import sys; print '#'*10; sys.stderr.write('1234567890'*100)\"", CHILD_IO_STDERR_CLOSE); 
+    dlog("--------- test SUBPROC_IGNORE_STDERR");
+    do_test("python -c \"import sys; print '#'*10; sys.stderr.write('1234567890'*100)\"", SUBPROC_IGNORE_STDERR); 
 
-    dlog("--------- test CHILD_IO_STDERR_REDIRECT_TO_STDOUT");
-    do_test("python -c \"import sys; print '#'*10; sys.stderr.write('1234567890'*100)\"", CHILD_IO_STDERR_REDIRECT_TO_STDOUT); 
+    dlog("--------- test SUBPROC_STDERR_REDIRECT_TO_STDOUT");
+    do_test("python -c \"import sys; print '#'*10; sys.stderr.write('1234567890'*100)\"", SUBPROC_STDERR_REDIRECT_TO_STDOUT); 
 
-    dlog("--------- test CHILD_EXEC_WITH_SHELL");
-    do_test("head -c 2K /bin/echo | base64", CHILD_EXEC_WITH_SHELL); 
+    dlog("--------- test SUBPROC_EXEC_WITH_SHELL");
+    do_test("head -c 2K /bin/echo | base64", SUBPROC_EXEC_WITH_SHELL); 
 
-    dlog("--------- test CHILD_EXEC_WITH_SHELL|CHILD_IO_STDOUT_CLOSE");
-    do_test("head -c 2K /bin/echo | base64", CHILD_EXEC_WITH_SHELL|CHILD_IO_STDOUT_CLOSE); 
+    dlog("--------- test SUBPROC_EXEC_WITH_SHELL|SUBPROC_IGNORE_STDOUT");
+    do_test("head -c 2K /bin/echo | base64", SUBPROC_EXEC_WITH_SHELL|SUBPROC_IGNORE_STDOUT); 
 
-    dlog("--------- test CHILD_EXEC_WITH_SHELL|CHILD_IO_STDERR_CLOSE");
-    do_test("head -c 2K /bin/echo | base64 - 1>&2", CHILD_EXEC_WITH_SHELL|CHILD_IO_STDERR_CLOSE); 
+    dlog("--------- test SUBPROC_EXEC_WITH_SHELL|SUBPROC_IGNORE_STDERR");
+    do_test("head -c 2K /bin/echo | base64 - 1>&2", SUBPROC_EXEC_WITH_SHELL|SUBPROC_IGNORE_STDERR); 
     
-    dlog("--------- test CHILD_EXEC_WITH_SHELL|CHILD_IO_STDERR_REDIRECT_TO_STDOUT");
-    do_test("head -c 2K /bin/echo | base64 - 1>&2", CHILD_EXEC_WITH_SHELL|CHILD_IO_STDERR_REDIRECT_TO_STDOUT); 
+    dlog("--------- test SUBPROC_EXEC_WITH_SHELL|SUBPROC_STDERR_REDIRECT_TO_STDOUT");
+    do_test("head -c 2K /bin/echo | base64 - 1>&2", SUBPROC_EXEC_WITH_SHELL|SUBPROC_STDERR_REDIRECT_TO_STDOUT); 
 
-    dlog("--------- test CHILD_EXEC_WITH_SHELL|CHILD_IO_STDERR_CLOSE|CHILD_IO_STDOUT_CLOSE");
+    dlog("--------- test SUBPROC_EXEC_WITH_SHELL|SUBPROC_IGNORE_STDERR|SUBPROC_IGNORE_STDOUT");
     do_test("python -c \"import sys; print '#'*10; sys.stderr.write('1234567890'*100)\"", 
-            CHILD_EXEC_WITH_SHELL|CHILD_IO_STDERR_CLOSE|CHILD_IO_STDOUT_CLOSE); 
+            SUBPROC_EXEC_WITH_SHELL|SUBPROC_IGNORE_STDERR|SUBPROC_IGNORE_STDOUT); 
 
-    dlog("--------- test CHILD_EXEC_WITH_SHELL|CHILD_IO_STDIN_CLOSE");
-    do_test("echo | cat", CHILD_EXEC_WITH_SHELL|CHILD_IO_STDIN_CLOSE); 
+    dlog("--------- test SUBPROC_EXEC_WITH_SHELL|SUBPROC_CLOSE_STDIN");
+    do_test("echo | cat", SUBPROC_EXEC_WITH_SHELL|SUBPROC_CLOSE_STDIN); 
 
     return 0;
 }

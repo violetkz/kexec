@@ -18,6 +18,7 @@ if [ $# -gt 0 ];then
             ;;
         "-c" | "--clean" | "clean")
             rm -rf $BUILD_DIR kexeclib
+            rm -f npx?.log
             exit 0
             ;;
         *)
